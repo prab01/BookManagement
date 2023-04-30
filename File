@@ -1,0 +1,218 @@
+#include<iostream>
+#include<fstream>
+#include<string.h>
+#include<stdio.h>
+using namespace std;
+class Book
+{
+    private:
+    int BookID;
+    char BookTitle[20];
+    float price;
+
+    public:
+    Book()
+    {
+        BookID=0;
+        strcpy(BookTitle,"no title");
+        price=0;
+
+    }
+    void getBook()
+    {
+        cout<<"Enter the BookID Book TITLE AND PRICE"<<endl;
+        cin>>BookID;
+        cin.ignore();
+        cin.getline(BookTitle,19);
+        cin>>price;
+    }
+    void showBook()
+    {
+        cout<<"\n"<<BookID<<" "<<BookTitle<<" "<<price;
+    }
+    int storeBook();
+    void viewAllBooks();
+    void searchBook(char *);
+    void deleteBook(char *);
+    void updateBook(char *);
+
+};
+
+void Book::updateBook(char *t)
+{
+    fstream file;
+    file.open("newfile.dat",ios::in|ios::out|ios::ate|ios::binary);
+    file.seekg(0);
+    file.read((char*)this,sizeof(*this));
+    while(!file.eof())
+    {
+        if(!strcmp(t,BookTitle))
+        {
+        getBook();
+        file.seekp((int)file.tellp()-sizeof(*this));
+        file.write((char*)this,sizeof(*this));
+        }
+       file.read((char*)this,sizeof(*this));
+    }
+    file.close();
+}
+
+void Book::deleteBook(char *t)
+{
+    ifstream fin;
+    ofstream fout;
+
+    fin.open("newfile.dat",ios::binary|ios::in);
+    if(!fin)
+    {
+        cout<<"\n File not Found";
+    }
+    else{
+        fout.open("tempfile.dat",ios::out|ios::binary);
+        fin.read((char*)this,sizeof(*this));
+        while(!fin.eof())
+        {
+            if(strcmp(BookTitle,t))
+            fout.write((char*)this,sizeof(*this));
+            fin.read((char*)this,sizeof(*this));
+        }
+        fin.close();
+        fout.close();
+        remove("newfile.dat");
+        rename("tempfile.dat","newfile.dat");
+
+    }
+
+}
+void Book::searchBook(char *t)
+{
+    int counter=0;
+      ifstream fin;
+      fin.open("newfile.dat",ios::binary|ios::in);
+      if(!fin)
+      {
+        cout<<"File not found";
+      }
+      else
+      {
+        fin.read((char*)this,sizeof(*this));
+        while(!fin.eof())
+        {
+            if(!strcmp(t,BookTitle))
+            {
+                counter++;
+                showBook();
+            }
+           fin.read((char*)this,sizeof(*this));
+            
+        }
+        if(counter==0)
+        {
+            cout<<" Title not found";
+        }
+        fin.close();
+      }
+      
+
+}
+
+
+int Book::storeBook()
+{
+     ofstream fout;
+     if(BookID==0 && price==0)
+     {
+        cout<<"\n Book data not initialised"<<endl;
+        return (0);
+     }
+     else{
+     fout.open("newfile.dat",ios::app |ios::binary);
+     fout.write((char*)this,sizeof(*this));
+     fout.close();
+
+     return (1);
+     }
+
+
+
+}
+void Book::viewAllBooks()
+{
+    ifstream fin;
+    fin.open("newfile.dat",ios::in | ios:: binary);
+    if(!fin)
+    {
+        cout<<"File not found";
+    }
+    else{
+        fin.read((char*)this,sizeof(*this));
+        while(!fin.eof())
+        {
+        showBook();
+        fin.read((char*)this,sizeof(*this));
+        }
+        fin.close();
+    }
+}
+
+int menu()
+{
+    int choice;
+    cout<<"\n Book Management System"<<endl;
+    cout<<"\n1:Insert a Book  Record"<<endl;
+    cout<<"\n2.View all Book Record"<<endl;
+    cout<<"\n3.Search a Book Record"<<endl;
+    cout<<"\n4.Delete a Book Record"<<endl;
+    cout<<"\n5.Update a Book Record"<<endl;
+    cout<<"\n6. Exit"<<endl;
+    cout<<"\n\n Enter your choice"<<endl;
+    cin>>choice;
+    return (choice);
+
+}
+
+int main()
+{
+    Book b1;
+    char title[20];
+    while(1)
+    {
+    switch(menu())
+    {
+        case 1:
+        b1.getBook();
+        b1.storeBook();
+        cout<<"\nBook Record Inserted Succesfully"<<endl;
+        break;
+        case 2:
+        b1.viewAllBooks();
+        break;
+        case 3:
+        cout<<"Enter a Book Title to search\n"<<endl;
+        cin.ignore();
+        cin.getline(title,19);
+        b1.searchBook(title);
+        break;
+        case 4:
+        cout<<"Enter a Book Title to delete a record"<<endl;
+        cin.ignore();
+        cin.getline(title,19);
+         b1.deleteBook(title);
+        break;
+        case 5:
+        cout<<"Enter a Book Tile to update a record"<<endl;
+        cin.ignore();
+        cin.getline(title,19);
+        b1.updateBook(title);
+        break;
+        case 6:
+        cout<<"Thank you for using this Application"<<endl;
+        cout<<"Press any key to exit"<<endl;
+        exit(0);
+        break;
+        default:
+        cout<<"\n Invaild Input";
+    }
+}
+
+}
